@@ -13,6 +13,12 @@ Projects get copies, not a live dependency. A copy can be edited for that projec
 | `handoff` | Writes or resumes `HANDOFF.md`, the temporary state passed between sessions and agents. |
 | `ship` | Takes the working tree to a pushed branch: branch, gate, Conventional Commits, push, move the issue. |
 | `new-feature` | Scaffolds a feature in the layout the project's config declares. |
+| `tdd` | Red-green loop with rules for tests worth keeping. |
+| `diagnosing-bugs` | A diagnosis loop for hard bugs and regressions: reproduce, hypothesise, probe, fix at the right seam. |
+| `codebase-design` | Vocabulary for deep modules, seams and interfaces; `tdd` and `codinary` call it. |
+| `codinary` | Brief to verified delivery with separate implementer, reviewer and fixer agents. Invoked only (`/codinary`), and costly; save it for big features. |
+
+`tdd`, `diagnosing-bugs`, `codebase-design` and `codinary` are adapted from igmrrf/agentic; [UPSTREAM.md](UPSTREAM.md) has the details.
 
 ## Using it in a project
 
