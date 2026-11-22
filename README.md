@@ -17,6 +17,7 @@ Projects get copies, not a live dependency. A copy can be edited for that projec
 | `diagnosing-bugs` | A diagnosis loop for hard bugs and regressions: reproduce, hypothesise, probe, fix at the right seam. |
 | `codebase-design` | Vocabulary for deep modules, seams and interfaces; `tdd` and `codinary` call it. |
 | `codinary` | Brief to verified delivery with separate implementer, reviewer and fixer agents. Invoked only (`/codinary`), and costly; save it for big features. |
+| `explain` | Explains a concept or the last answer in Simplified Technical English (STE style) on a page with SVG diagrams. `scripts/ste-check` checks the prose. For an offer after long answers, add the line from the skill's last section to your personal `CLAUDE.md` or `AGENTS.md`. |
 
 `tdd`, `diagnosing-bugs`, `codebase-design` and `codinary` are adapted from igmrrf/agentic; [UPSTREAM.md](UPSTREAM.md) has the details.
 

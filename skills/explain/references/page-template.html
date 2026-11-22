@@ -1,0 +1,169 @@
+<title>{{Concept in two to four words}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<style>
+  :root {
+    --bg: #fbfbfa;
+    --fg: #1c1d1f;
+    --muted: #5f636a;
+    --line: #d9dbde;
+    --surface: #ffffff;
+    --soft: #f1f2f3;
+    --accent: #0b7a55;
+    --accent-soft: #e3f4ec;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141517;
+      --fg: #e8e9eb;
+      --muted: #a2a6ad;
+      --line: #34373c;
+      --surface: #1c1e21;
+      --soft: #23262a;
+      --accent: #4fd8a0;
+      --accent-soft: #173327;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141517;
+    --fg: #e8e9eb;
+    --muted: #a2a6ad;
+    --line: #34373c;
+    --surface: #1c1e21;
+    --soft: #23262a;
+    --accent: #4fd8a0;
+    --accent-soft: #173327;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 17px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main {
+    max-width: 760px; margin: 0 auto; padding-block: 40px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 6px; text-wrap: balance; }
+  .kicker { color: var(--muted); font-size: 0.875rem; margin: 0 0 28px; }
+  h2 {
+    font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin: 44px 0 12px;
+  }
+  p { margin: 0 0 14px; }
+  .summary {
+    font-size: 1.125rem; border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px; margin: 0;
+  }
+  code {
+    font: 0.875em/1.4 "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--soft); padding: 1px 5px; border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+  td:first-child { white-space: nowrap; font-weight: 600; padding-right: 20px; }
+  figure {
+    margin: 0 0 24px; padding: 20px 16px 12px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  }
+  figure svg { display: block; width: 100%; height: auto; max-width: 100%; color: var(--fg); margin: 0 auto; }
+  figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 12px; }
+  svg text { font: 13px "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; fill: currentColor; }
+  svg .box { fill: var(--surface); stroke: currentColor; stroke-width: 1.25; }
+  svg .accent { stroke: var(--accent); fill: var(--accent-soft); stroke-width: 2; }
+  svg .label { font-size: 12px; fill: var(--muted); }
+  svg .muted { color: var(--muted); stroke: var(--muted); }
+  ol.steps { padding-left: 0; list-style: none; counter-reset: step; margin: 0; }
+  ol.steps li {
+    counter-increment: step; position: relative;
+    padding: 0 0 14px 40px; margin: 0;
+  }
+  ol.steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 1px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 0.8rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  ul.refs { list-style: none; padding: 0; margin: 0; }
+  ul.refs li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  details {
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 10px; background: var(--surface);
+  }
+  summary { cursor: pointer; font-weight: 600; }
+  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  details p { margin: 10px 0 0; color: var(--muted); }
+  .note { color: var(--muted); font-size: 0.9rem; }
+  @media (max-width: 520px) {
+    body { font-size: 16px; }
+    td:first-child { white-space: normal; }
+  }
+</style>
+<main>
+  <h1>{{Concept in two to four words}}</h1>
+  <p class="kicker">Explained in Simplified Technical English</p>
+
+  <section>
+    <h2>Summary</h2>
+    <p class="summary">{{Two or three sentences: what it is and why it matters.}}</p>
+  </section>
+
+  <section>
+    <h2>Terms</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>{{term}}</td><td>{{One-sentence definition.}}</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Diagram</h2>
+    <figure>
+      <svg viewBox="0 0 640 200" role="img" aria-label="{{Same claim as the caption}}">
+        <defs>
+          <marker id="arrow-1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <!-- {{Draw the mechanism here. See diagram-patterns.md.}} -->
+      </svg>
+      <figcaption>{{One line: what the reader must see in this picture.}}</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>{{One action per step.}}</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>In the code</h2>
+    <ul class="refs">
+      <li><code>{{path/to/file.ts:42}}</code> {{what this line does}}</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Check yourself</h2>
+    <details>
+      <summary>{{Question?}}</summary>
+      <p>{{Answer.}}</p>
+    </details>
+  </section>
+
+  <p class="note">{{Optional: gaps or doubts in the source.}}</p>
+</main>
