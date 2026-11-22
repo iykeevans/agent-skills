@@ -1,0 +1,170 @@
+#!/bin/sh
+# Check prose against the STE-style rules in ../references/ste-rules.md.
+#
+#   ste-check [file.md|file.html ...]     reads stdin when no file is given
+#
+# Reports long sentences, passive voice, "-ing" words and avoid-list hits with
+# line numbers. Exit 0 when clean, 1 when there are hits, 2 on a usage error.
+# Text in `backticks`, fenced code blocks and (for HTML) <code>, <svg>, <style>
+# and <head> are skipped: they hold technical names.
+#
+# Heuristics, not a parser. A sentence in a list item, or one that starts with
+# an approved verb, counts as procedural (max 20 words); others as descriptive
+# (max 25). HTML line numbers point at the original file only roughly.
+set -eu
+
+here="$(cd "$(dirname "$0")" && pwd)"
+words="$here/../references/ste-words.md"
+[ -f "$words" ] || { echo "ste-check: missing $words" >&2; exit 2; }
+
+html_to_md() {
+  # Keeps one output line per input line so line numbers stay close.
+  awk '
+    BEGIN { skip = "" }
+    {
+      line = $0
+      out = ""
+      while (length(line) > 0) {
+        if (skip != "") {
+          i = index(tolower(line), "</" skip)
+          if (i == 0) { line = ""; break }
+          line = substr(line, i + length(skip) + 2)
+          j = index(line, ">"); line = (j ? substr(line, j + 1) : "")
+          skip = ""
+          continue
+        }
+        lo = tolower(line)
+        best = 0; tag = ""
+        n = split("head style svg script", t, " ")
+        for (k = 1; k <= n; k++) {
+          p = index(lo, "<" t[k])
+          if (p && (best == 0 || p < best)) { best = p; tag = t[k] }
+        }
+        if (best) { out = out substr(line, 1, best - 1); line = substr(line, best); skip = tag; continue }
+        out = out line; line = ""
+      }
+      gsub(/<code[^>]*>/, "`", out); gsub(/<\/code>/, "`", out)
+      gsub(/<li[^>]*>/, "\n- ", out)
+      gsub(/<(p|tr|h[1-6]|summary|figcaption|details|section|table|ol|ul|br)[^>]*>/, "\n\n", out)
+      gsub(/<\/(p|li|tr|h[1-6]|summary|figcaption|details|section|table|ol|ul)>/, "\n\n", out)
+      gsub(/<\/?t[dh][^>]*>/, " | ", out)
+      gsub(/<[^>]*>/, " ", out)
+      gsub(/&nbsp;/, " ", out); gsub(/&amp;/, "\\&", out); gsub(/&lt;/, "<", out); gsub(/&gt;/, ">", out)
+      gsub(/\n/, "\001", out)
+      print out
+    }' | awk '{ n = split($0, p, "\001"); printf "%s", p[1]; for (i = 2; i <= n; i++) printf "%s", (p[i] == "" ? " ~BREAK~ " : " ~BREAK~ " p[i]); print "" }'
+}
+
+check() {
+  # $1 = display name; text on stdin.
+  awk -v name="$1" -v words="$words" '
+    function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+    function report(ln, msg) { printf "%s:%d: %s\n", name, ln, msg; hits++ }
+    function snippet(s) { s = trim(s); return (length(s) > 70 ? substr(s, 1, 67) "..." : s) }
+    function bare(w) { w = tolower(w); gsub(/[^a-z0-9-]/, "", w); return w }
+
+    function close_sentence(   n, lim, kind, low, i, e, re, first) {
+      if (nw == 0) { sent = ""; return }
+      first = bare(fw)
+      lim = (inlist || (first in verbs)) ? 20 : 25
+      kind = (lim == 20) ? "procedural" : "descriptive"
+      if (nw > lim) report(sl, "long " kind " sentence, " nw " words (max " lim "): " snippet(sent))
+      low = " " tolower(sent) " "
+      gsub(/[^a-z0-9 -]/, " ", low)
+      for (i = 1; i <= nphr; i++) if (low ~ phr_re[i]) report(sl, avoid_msg(phr[i], phr_use[i]))
+      nw = 0; sent = ""; fw = ""
+    }
+
+    function avoid_msg(b, u) { return (u == "(delete)") ? "delete \"" b "\"" : "avoid \"" b "\", use \"" u "\"" }
+
+    function word(w, ln,   b, hit, stem) {
+      if (nw == 0) { sl = ln; fw = w }
+      nw++
+      sent = sent " " w
+      if (w ~ /^~CODE~/) { prev = ""; if (w ~ /[.!?]$/) close_sentence(); return }
+      b = bare(w)
+      hit = 0
+      if (b in avoid) { report(ln, avoid_msg(b, avoid[b])); hit = 1 }
+      else for (stem in avoid) {
+        if (b == stem "s" || b == stem "es" || b == stem "d" || b == stem "ed" || b == stem "ing" || (stem ~ /e$/ && b == substr(stem, 1, length(stem) - 1) "ing")) {
+          report(ln, avoid_msg(b, avoid[stem])); hit = 1; break
+        }
+      }
+      if (!hit && b ~ /ings?$/ && length(b) > 5 && !(b in ingok)) report(ln, "\"-ing\" word \"" b "\": use a simple tense or a noun")
+      if (prev in aux) {
+        if (b ~ /[a-z][a-z]ed$/ || (b in participle)) report(ln, "passive voice \"" prev " " b "\": say who does the action")
+      }
+      if (b in aux) prev = b
+      else if (b == "not" || b ~ /ly$/ || b == "also" || b == "then") prev = prev
+      else prev = ""
+      if (w ~ /[.!?][")]?$/ && !(tolower(w) in abbr)) close_sentence()
+    }
+
+    BEGIN {
+      while ((getline l < words) > 0) {
+        if (l ~ /^## /) { sec = l; continue }
+        if (sec ~ /Approved verbs/ && l !~ /^ *$/) {
+          n = split(l, v, /, */); for (i = 1; i <= n; i++) verbs[trim(v[i])] = 1
+        }
+        if (sec ~ /^## Avoid/ && l ~ /^\|/ && l !~ /^\| *-/ && l !~ /^\| *avoid *\|/) {
+          split(l, c, "|"); a = trim(c[2]); u = trim(c[3])
+          if (a ~ / /) {
+            nphr++; phr[nphr] = a; phr_use[nphr] = u
+            split(a, pw, " "); rest = substr(a, length(pw[1]) + 1)
+            phr_re[nphr] = " " pw[1] "(s|es|d|ed|ing|[a-z]ing|[a-z]ed)?" rest " "
+          } else avoid[a] = u
+        }
+      }
+      split("is are was were be been being am get gets got", t, " "); for (i in t) aux[t[i]] = 1
+      split("done made built sent taken given written shown known seen found held kept set run put read left lost told thrown chosen broken driven hidden drawn gone begun bound brought bought caught dealt fed felt fought hung heard laid led lent meant met paid sought shut sold spent stood struck swept taught thought understood won wound", t, " ")
+      for (i in t) participle[t[i]] = 1
+      split("string strings thing things nothing something anything everything during bring brings spring ceiling ceilings morning evening ring king wing swing sting thing ping pings padding margin heading headings setting settings building buildings routing mapping mappings logging rendering caching hashing polling staging pricing billing onboarding branding meaning meanings warning warnings", t, " ")
+      for (i in t) ingok[t[i]] = 1
+      split("e.g. i.e. vs. etc.) cf.", t, " "); for (i in t) abbr[t[i]] = 1
+    }
+
+    /^[ \t]*(```|~~~)/ { fence = !fence; close_sentence(); inlist = 0; next }
+    fence { next }
+    {
+      line = $0
+      if (line ~ /^[ \t]*\|[ \t:-]+\|[ \t:|-]*$/) next
+      gsub(/`[^`]*`/, " ~CODE~ ", line)
+      while (match(line, /\[[^]]*\]\([^)]*\)/)) {
+        seg = substr(line, RSTART, RLENGTH); txt = seg
+        sub(/\]\(.*/, "", txt); sub(/^\[/, "", txt)
+        line = substr(line, 1, RSTART - 1) txt substr(line, RSTART + RLENGTH)
+      }
+      gsub(/<[^>]*>/, " ", line)
+      gsub(/\*\*|__/, "", line)
+      if (line ~ /^[ \t]*$/) { close_sentence(); inlist = 0; next }
+      if (line ~ /^[ \t]*#/) { close_sentence(); inlist = 0; sub(/^[ \t]*#+[ \t]*/, "", line); n = split(line, w, /[ \t]+/); for (i = 1; i <= n; i++) if (w[i] != "") word(w[i], NR); close_sentence(); next }
+      if (line ~ /^[ \t]*([-*+]|[0-9]+[.)])[ \t]/) { close_sentence(); inlist = 1; sub(/^[ \t]*([-*+]|[0-9]+[.)])[ \t]+/, "", line) }
+      if (line ~ /^[ \t]*>/) sub(/^[ \t]*>+[ \t]*/, "", line)
+      if (line ~ /^[ \t]*\|/) { close_sentence(); gsub(/\|/, " ~CELL~ ", line) }
+      n = split(line, w, /[ \t]+/)
+      for (i = 1; i <= n; i++) {
+        if (w[i] == "") continue
+        if (w[i] == "~CELL~" || w[i] == "~BREAK~") { close_sentence(); if (w[i] == "~BREAK~") inlist = 0; continue }
+        if (w[i] == "-" && nw == 0) { inlist = 1; continue }
+        if (w[i] ~ /^[^a-zA-Z0-9~]+$/) continue
+        word(w[i], NR)
+      }
+    }
+    END { close_sentence(); exit (hits > 0) }
+  '
+}
+
+status=0
+if [ $# -eq 0 ]; then
+  check "stdin" || status=1
+else
+  for f in "$@"; do
+    [ -f "$f" ] || { echo "ste-check: no such file: $f" >&2; exit 2; }
+    case "$f" in
+      *.html|*.htm) html_to_md < "$f" | check "$f" || status=1 ;;
+      *) check "$f" < "$f" || status=1 ;;
+    esac
+  done
+fi
+[ "$status" -eq 0 ] && echo "ste-check: clean" >&2
+exit "$status"
