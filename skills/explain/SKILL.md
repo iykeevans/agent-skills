@@ -71,7 +71,7 @@ It reports long sentences, passive voice, "-ing" words and words from the avoid 
 
 ## 6. Build the page
 
-Start from `references/page-template.html`. Keep its tokens and dark-mode rules. Fill the sections in this order and delete the ones that do not apply:
+Start from `references/page-template.html`. It is a page fragment: a `<title>`, a `<style>` and a `<main>`, with no `<!doctype>`, `<html>`, `<head>` or `<body>`, because an artifact host adds its own wrapper. Keep its tokens, dark-mode rules and the side gutter. Fill the sections in this order and delete the ones that do not apply:
 
 1. **Summary**: 2 or 3 sentences. What it is and why it matters.
 2. **Terms**: a table, term to one-sentence definition.
@@ -85,7 +85,7 @@ The page title is the concept in two to four words, for example "Request proxy f
 ## 7. Deliver
 
 - **With an Artifact tool** (Claude Code): load the `artifact-design` skill, then publish the page. Reply with the link and the summary.
-- **Without one** (Codex and other hosts): write the page to a temporary directory. Reply with the absolute path and the summary.
+- **Without one** (Codex and other hosts): wrap the fragment in `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">` … `</head><body>` … `</body></html>`, with the `<title>`, `<link>` and `<style>` in the head. Write it to a temporary directory. Reply with the absolute path and the summary.
 
 The page can hold code and file paths from a private repo. Publish it only as a private page. Do not send it to any other service.
 
